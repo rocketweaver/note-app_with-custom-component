@@ -24,6 +24,14 @@ class NoteList extends HTMLElement {
             gap: 2rem;
             z-index: 0;
         }
+        @media screen and (max-width: 768px) { 
+          note-list {
+              display: grid;
+              grid-template-columns: 1fr;
+              gap: 2rem;
+              z-index: 0;
+          }
+        }
     `;
   }
 

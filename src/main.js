@@ -1,6 +1,7 @@
 import "./note-list.js";
 import "./note-item.js";
 import "./add-btn.js";
+import "./note-form.js";
 
 const notesData = [
   {
@@ -144,7 +145,11 @@ window.addEventListener("load", function () {
       }, 300);
     });
   }
+
+  notesData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const noteListEl = document.querySelector("note-list");
+  noteListEl.setNoteList(notesData);
 });
 
-const noteListEl = document.querySelector("note-list");
-noteListEl.setNoteList(notesData);
+export { notesData };
