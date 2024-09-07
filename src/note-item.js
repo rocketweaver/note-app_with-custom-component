@@ -1,3 +1,5 @@
+const API_URL = "https://notes-api.dicoding.dev/v2";
+
 class NoteItem extends HTMLElement {
   constructor() {
     super();
@@ -63,6 +65,17 @@ class NoteItem extends HTMLElement {
         .body {
             margin-top: 15px
         }
+
+        .remove-form {
+          text-align: right;
+          margin-top: 15px;
+        }
+
+        .remove-icon {
+          cursor: pointer;
+          background: none;
+          border: none;
+        }
     `;
   }
 
@@ -70,12 +83,37 @@ class NoteItem extends HTMLElement {
     const date = new Date(this._note.createdAt);
 
     const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month is zero-indexed
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     const hours = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
 
     return `${day}/${month}/${year} - ${hours}:${minutes}`;
+  }
+
+  async handleDelete(event) {
+    event.preventDefault();
+
+    const noteId = this._note.id;
+    const intro = document.getElementById("intro");
+
+    try {
+      intro.style.display = "flex";
+      animateIntro(intro);
+
+      const response = await fetch(`${API_URL}/notes/${noteId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete the note.");
+      }
+
+      this.remove();
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to delete the note. Please try again.");
+    }
   }
 
   render() {
@@ -93,7 +131,47 @@ class NoteItem extends HTMLElement {
                 <p>${this._note.title}</p>
             </div>
             <small class="note-date">${this.formattedDate()}</small>
+            <form class="remove-form" method="delete">
+              <button type="submit" class="remove-icon"><img src="/img/delete-btn.svg"></button>
+            </form>
         `;
+
+    this.querySelector(".remove-form").addEventListener(
+      "submit",
+      this.handleDelete.bind(this)
+    );
+  }
+}
+
+function animateIntro(intro) {
+  for (const child of intro.children) {
+    const animation = child.animate(
+      [
+        { left: "-300px", opacity: 0 },
+        { left: "0", opacity: 1 },
+      ],
+      {
+        duration: 300,
+        iterations: 1,
+      }
+    );
+
+    animation.addEventListener("finish", function () {
+      setTimeout(function () {
+        child.animate(
+          [
+            { left: "0", opacity: 1 },
+            { left: "300px", opacity: 0 },
+          ],
+          {
+            duration: 150,
+            iterations: 1,
+          }
+        ).onfinish = function () {
+          intro.style.display = "none";
+        };
+      }, 300);
+    });
   }
 }
 

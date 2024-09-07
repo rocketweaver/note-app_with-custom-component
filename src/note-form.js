@@ -1,4 +1,4 @@
-import { notesData } from "./main.js";
+const API_URL = "https://notes-api.dicoding.dev/v2";
 
 class NoteForm extends HTMLElement {
   constructor() {
@@ -15,6 +15,7 @@ class NoteForm extends HTMLElement {
     const notes = document.querySelector("#notes");
     const newNote = document.querySelector("#new-note");
     const form = this.querySelector("#note-form");
+    const intro = document.getElementById("intro");
 
     backBtn.addEventListener("click", function () {
       newNote.classList.add("d-none");
@@ -176,7 +177,7 @@ class NoteForm extends HTMLElement {
     }
   }
 
-  handleSubmit(event) {
+  async handleSubmit(event) {
     event.preventDefault();
 
     const title = this.querySelector("#title");
@@ -186,27 +187,96 @@ class NoteForm extends HTMLElement {
       return;
     }
 
+    intro.style.display = "flex";
+    animateIntro(intro);
+
     const newNoteData = {
-      id: this.generateId("notes"),
       title: title.value,
       body: body.value,
-      createdAt: this.getCurrentDate(),
-      archived: false,
     };
 
-    notesData.push(newNoteData);
+    try {
+      const res = await fetch(`${API_URL}/notes`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newNoteData),
+      });
 
-    const noteListEl = document.querySelector("note-list");
+      const result = await res.json();
 
-    notesData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    noteListEl.setNoteList(notesData);
+      if (res.ok) {
+        console.log("Note successfully added:", result);
+        this.updateNoteList();
+      } else {
+        console.error("Failed to add note:", result.message);
+      }
+    } catch (error) {
+      console.error("Error adding note:", error);
+    }
 
     const notes = document.querySelector("#notes");
     const newNote = document.querySelector("#new-note");
     newNote.classList.add("d-none");
     notes.classList.remove("d-none");
   }
+
+  async updateNoteList() {
+    try {
+      const res = await fetch(`${API_URL}/notes`);
+      const resJson = await res.json();
+
+      if (res.ok) {
+        const notesData = resJson.data;
+
+        notesData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        const noteListEl = document.querySelector("note-list");
+        noteListEl.setNoteList(notesData);
+      } else {
+        console.error("Failed to fetch notes:", resJson.message);
+      }
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+    }
+  }
+}
+
+function animateIntro(intro) {
+  for (const child of intro.children) {
+    const animation = child.animate(
+      [
+        { left: "-300px", opacity: 0 },
+        { left: "0", opacity: 1 },
+      ],
+      {
+        duration: 300,
+        iterations: 1,
+      }
+    );
+
+    animation.addEventListener("finish", function () {
+      setTimeout(function () {
+        child.animate(
+          [
+            { left: "0", opacity: 1 },
+            { left: "300px", opacity: 0 },
+          ],
+          {
+            duration: 150,
+            iterations: 1,
+          }
+        ).onfinish = function () {
+          intro.style.display = "none";
+        };
+      }, 300);
+    });
+  }
+}
+
+function hideIntro(intro) {
+  intro.style.display = "none";
 }
 
 customElements.define("note-form", NoteForm);

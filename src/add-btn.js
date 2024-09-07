@@ -18,12 +18,21 @@ class AddBtn extends HTMLElement {
 
     const notes = document.querySelector("#notes");
     const newNote = document.querySelector("#new-note");
+    const backBtn = document.querySelector(".back-btn");
 
-    notes.addEventListener("click", function (e) {
+    this.addEventListener("click", function (e) {
       this.classList.add("d-none");
       notes.classList.add("d-none");
       newNote.classList.remove("d-none");
     });
+
+    if (backBtn) {
+      backBtn.addEventListener("click", () => {
+        this.classList.remove("d-none");
+        notes.classList.remove("d-none");
+        newNote.classList.add("d-none");
+      });
+    }
 
     this.render();
   }
