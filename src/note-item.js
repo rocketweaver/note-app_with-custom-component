@@ -132,7 +132,7 @@ class NoteItem extends HTMLElement {
             </div>
             <small class="note-date">${this.formattedDate()}</small>
             <form class="remove-form" method="delete">
-              <button type="submit" class="remove-icon"><img src="/img/delete-btn.svg"></button>
+              <button type="submit" class="remove-icon"><img src="img/delete-btn.svg"></button>
             </form>
         `;
 
